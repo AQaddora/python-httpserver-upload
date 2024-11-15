@@ -1,24 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload</title>
+    <title>File Vault</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script>
+        function triggerFileInput() {
+            document.getElementById('file-upload').click(); // Trigger the hidden file input
+        }
+
+        function autoSubmitForm() {
+            var fileInput = document.getElementById('file-upload');
+            if (fileInput.files.length > 0) {
+                document.getElementById('file-upload-form').submit(); // Automatically submit the form
+            } else {
+                alert("Please select a file before submitting.");
+            }
+        }
+    </script>
 </head>
+
 <body>
     <div class="container">
-        <h1>File Sharing Tool</h1>
+        <h1>File Vault</h1>
+        {{QR_CODE}}
+
         <h2>Upload a File</h2>
-        <form action="/cgi-bin/pyupload.cgi" method="POST" enctype="multipart/form-data">
-            <input type="file" name="uploadedfile" multiple>
-            <input type="submit" value="Upload File">
+        <form id="file-upload-form" action="/cgi-bin/pyupload.cgi" method="POST" enctype="multipart/form-data">
+            <!-- Hidden file input -->
+            <input type="file" id="file-upload" name="uploadedfile" multiple style="display: none;" onchange="autoSubmitForm()">
+            
+            <!-- Submit button that triggers file selection automatically -->
+            <input type="button" value="Upload File" class="file-input-button" onclick="triggerFileInput()">
         </form>
         <hr>
         <h2>Available Files</h2>
-        {{FILE_LINKS}}
-        {{QR_CODE}}
-        {{SUCCESS_MESSAGE}}
+        <ol>
+            {{FILE_LINKS}}
+        </ol>
     </div>
 </body>
+
 </html>

@@ -21,8 +21,22 @@ h1, h2 {
 }
 
 input[type="file"] {
-    display: block;
-    margin: 10px 0;
+    display: none; /* Hide the file input */
+}
+
+.file-input-button {
+    background: #007BFF;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+}
+
+.file-input-button:hover {
+    background: #0056b3;
 }
 
 input[type="submit"] {
@@ -54,5 +68,6 @@ a:hover {
 }
 
 img {
-    max-width: 80%;
+    width: 80%;
+    max-width: 250px;
 }
