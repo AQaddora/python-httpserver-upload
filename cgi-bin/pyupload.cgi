@@ -1,75 +1,99 @@
-#!/usr/bin/env python
+#!/opt/homebrew/bin/python3
 
 import cgitb
 cgitb.enable()
 
 import cgi
-import logging
 import os
 import socket
+import glob
+from urllib.parse import quote
 
 REQUEST_METHOD = os.environ.get('REQUEST_METHOD', 'GET')
 REQUEST_PORT = os.environ.get("SERVER_PORT", '8000')
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads')
+HTML_TEMPLATE = os.path.join(BASE_DIR, 'static', 'index.html')
 
+# Ensure the uploads directory exists
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
 
-def render_form(success_filenames=None):
-    print("Content-Type: text/html")
-    print()
-    print("""
-        <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-        </head>
-    """)
+def get_file_links():
+    """Get a list of downloadable file links."""
+    files = glob.glob(f"{UPLOAD_DIR}/*")
+    return [
+        f'<li><a href="/uploads/{quote(os.path.basename(file))}" download>{os.path.basename(file)}</a></li>'
+        for file in files
+    ]
 
+def render_page(success_filenames=None):
+    """Render the HTML page with the dynamic content."""
+    with open(HTML_TEMPLATE, 'r') as f:
+        html_content = f.read()
+
+    # Generate links for uploaded files
+    file_links = get_file_links()
+    file_links_html = "\n".join(file_links) if file_links else "<p>No files uploaded yet.</p>"
+
+    # Insert the file upload success message if applicable
+    success_message = ""
     if success_filenames:
-        print("""
-            <h3>Files uploaded successfully:</h3>
-            <ul>
-        """)
-        for fname in success_filenames:
-            print(f"<li>{fname}</li>")
-        print("</ul><hr>")
+        uploaded_files = "".join(f"<li>{fname}</li>" for fname in success_filenames)
+        success_message = f"<h3>Files uploaded successfully:</h3><ul>{uploaded_files}</ul><hr>"
 
-    print(f"""
-        <h2>Upload a file</h2>
-        <p>Files will be uploaded to <strong>{os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..'))}/</strong></p>
-    """)
-
-    print(f"""
-        <form action="/cgi-bin/pyupload.cgi" method="POST" enctype="multipart/form-data">
-            <input type="file" name="uploadedfile" multiple>
-            <input type="submit" value="Upload File">
-        </form>
-    """)
-
+    # Generate QR code
+    qr_html = ""
     try:
         import qrcode
         import qrcode.image.svg
+        from io import BytesIO
 
-        url = f'http://{socket.getfqdn()}.local:{REQUEST_PORT}/cgi-bin/pyupload.cgi'
-        qr = qrcode.make(url, image_factory=qrcode.image.svg.SvgImage)
-        print(f"""
+        # img = qrcode.make("https://google.com")
+        # img.save("qr.png", "PNG")
+        # os.system("display qr.png")
+
+        hostname = socket.gethostname()    
+        IPAddr = socket.gethostbyname(hostname)  
+        url = f'http://{hostname}:{REQUEST_PORT}/cgi-bin/pyupload.cgi'
+        qr = qrcode.make(url)
+        qr.save("url-qr.png")
+        qr_html = f"""
             <hr>
             <p>Scan to access on another device: <a href="{url}">{url}</a></p>
-            {qr.to_string().decode('utf-8')}
-        """)
-
+            <div class="qr-container">
+                <img src="../url-qr.png" />
+            </div>
+        """
     except ImportError:
-        logging.warning('Skipping generating address QR code, qrcode library not installed or not in python path.')
+        qr_html = "<p>QR code generation is not available. Install the `qrcode` library to enable this feature.</p>"
+
+    # Replace placeholders in the template
+    html_content = html_content.replace("{{SUCCESS_MESSAGE}}", success_message)
+    html_content = html_content.replace("{{FILE_LINKS}}", file_links_html)
+    html_content = html_content.replace("{{QR_CODE}}", qr_html)
+
+    print("Content-Type: text/html")
+    print()
+    print(html_content)
+
 
 
 if REQUEST_METHOD == 'POST':
+    # Handle file upload
     form = cgi.FieldStorage()
     files = form['uploadedfile'] if isinstance(form['uploadedfile'], list) else [form['uploadedfile']]
 
     filenames = []
     for file in files:
-        filename = file.filename
-        filenames.append(filename)
-        with open(f'{os.path.dirname(__file__)}/../{filename}', 'wb+') as f:
+        filename = os.path.basename(file.filename)  # Sanitize the filename
+        save_path = os.path.join(UPLOAD_DIR, filename)
+        with open(save_path, 'wb') as f:
             f.write(file.file.read())
+        filenames.append(filename)
 
-    render_form(success_filenames=filenames)
+    render_page(success_filenames=filenames)
 
 else:
-    render_form()
+    # Handle GET request
+    render_page()

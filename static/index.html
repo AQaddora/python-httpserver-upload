@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>File Sharing Tool</h1>
+        <h2>Upload a File</h2>
+        <form action="/cgi-bin/pyupload.cgi" method="POST" enctype="multipart/form-data">
+            <input type="file" name="uploadedfile" multiple>
+            <input type="submit" value="Upload File">
+        </form>
+        <hr>
+        <h2>Available Files</h2>
+        {{FILE_LINKS}}
+        {{QR_CODE}}
+        {{SUCCESS_MESSAGE}}
+    </div>
+</body>
+</html>
