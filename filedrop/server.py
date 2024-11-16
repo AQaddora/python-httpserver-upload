@@ -1,9 +1,10 @@
 import os
-from http.server import SimpleHTTPRequestHandler, HTTPServer
 import socket
+import subprocess
 import json
 import qrcode
 from qrcode.image.pure import PyPNGImage
+from http.server import SimpleHTTPRequestHandler, HTTPServer
 
 
 # Directory where files will be uploaded
@@ -21,16 +22,33 @@ if not os.path.exists(STATIC_DIR):
 
 def get_local_ip():
     """Get the local IP address of the server."""
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.settimeout(0)
-    try:
-        s.connect(('10.254.254.254', 1))  # This doesn't connect to anything, just to get the local IP address
-        local_ip = s.getsockname()[0]
-    except Exception:
-        local_ip = '127.0.0.1'  # Fallback to localhost if the local IP cannot be determined
-    finally:
-        s.close()
-    return local_ip
+    if os.name == 'nt':  # If the system is Windows
+        try:
+            # Run ipconfig command to get network information
+            result = subprocess.run('ipconfig', stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            output = result.stdout
+
+            # Look for 'IPv4 Address' in the output and return the corresponding IP
+            for line in output.splitlines():
+                if 'IPv4 Address' in line:
+                    local_ip = line.split(':')[1].strip()
+                    return local_ip
+            return "NONE"
+        except Exception:
+            return "NONE"
+    
+    else:  # For Linux/macOS/iOS and other Unix-based systems
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0)
+        try:
+            s.connect(('10.254.254.254', 1))  # This doesn't connect to anything, just to get the local IP address
+            local_ip = s.getsockname()[0]
+        except Exception:
+            local_ip = "NONE"  # Fallback message
+        finally:
+            s.close()
+        return local_ip
+
 
 class SimpleHTTPRequestHandlerWithUpload(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -147,12 +165,8 @@ class SimpleHTTPRequestHandlerWithUpload(SimpleHTTPRequestHandler):
         <body>
             <div class="container">
                 <h1>File Drop</h1>
-                <div>
-                    <p>Scan this to access on another device or visit: <a href="#" id="app-url">URL</a></p>
-                    <p>Make sure all devices are on the same network.</p>
-                    <div class="qr-container" id="qr-code">
-                        <!-- QR code will be dynamically inserted here -->
-                    </div>
+                <div id="urlContainer">
+                    <!-- URL and QR code will be dynamically inserted here -->
                 </div>
                 <div class="upload-form">
                     <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
@@ -171,23 +185,37 @@ class SimpleHTTPRequestHandlerWithUpload(SimpleHTTPRequestHandler):
             </div>
 
             <script>
-                // Function to fetch the hostname dynamically
                 function getServerUrl() {
                     // Fetch the hostname from the server-side response
                     fetch('/get_hostname')
                         .then(response => response.text())
                         .then(hostname => {
-                            const url = `http://${hostname}:8000`;
-                            // Update the link and QR code
-                            document.getElementById('app-url').href = url;
-                            document.getElementById('app-url').textContent = url;
+                            // Check if a valid hostname is retrieved
+                            if (hostname && hostname !== '127.0.0.1' && hostname !== 'NONE') {
+                                document.getElementById('urlContainer').style.color = "black";
+                                const url = `http://${hostname}:8000`;
+                                document.getElementById('urlContainer').innerHTML = `<p>Scan this to access on another device or visit: <a href="#" id="app-url">URL</a></p>
+                                    <p>Make sure all devices are on the same network.</p>
+                                    <div class="qr-container" id="qr-code">
+                                        <!-- QR code will be dynamically inserted here -->
+                                    </div>`;
+                                // Update the link and QR code
+                                document.getElementById('app-url').href = url;
+                                document.getElementById('app-url').textContent = url;
 
-                            // Generate QR code for the URL
-                            const qrContainer = document.getElementById('qr-code');
-                            qrContainer.innerHTML = `<img src="/qr_code.png" alt="QR Code">`;
+                                // Generate QR code for the URL
+                                const qrContainer = document.getElementById('qr-code');
+                                qrContainer.innerHTML = `<img src="/qr_code.png" alt="QR Code">`;
+                            }else{
+                                document.getElementById('urlContainer').style.color = "red";
+                                document.getElementById('urlContainer').innerHTML = "Error: Could not get the IP address, Go to device's settings";
+                            }
+                        })
+                        .catch(error => {
+                            document.getElementById('urlContainer').style.color = "red";
+                            document.getElementById('urlContainer').innerHTML = "Error: Could not get the IP address, Go to device's settings";
                         });
                 }
-
                 // Fetch the list of uploaded files when the page loads
                 window.onload = function () {
                     // Generate the QR code and set the app URL
@@ -353,7 +381,7 @@ class SimpleHTTPRequestHandlerWithUpload(SimpleHTTPRequestHandler):
 def main():
     server_address = ('', 8000)
     httpd = HTTPServer(server_address, SimpleHTTPRequestHandlerWithUpload)
-    print("Welcome to FileDrop! (v1.0.6)")
+    print("Welcome to FileDrop! (v1.0.7)")
     print("Server running on http://localhost:8000")
     httpd.serve_forever()
 

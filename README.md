@@ -6,7 +6,7 @@
 - **File Sharing**: Upload and download files through a simple web interface.
 - **QR Code Generation**: Dynamically generates a QR code for easy access to the server.
 - **Local Network Only**: Works across multiple devices connected to the same local network.
-- **Cross-Platform**: Use on **macOS**, **Linux**, and **iOS** via **A-Shell Mini** or **A-Shell**.
+- **Cross-Platform**: Use on **macOS**, **Linux**, **iOS** via **A-Shell Mini** or **A-Shell**, and **Windows**.
 
 ### Requirements:
 - Python 3.x
@@ -52,6 +52,22 @@
    - You can create a shortcut to automatically run the server and open the browser.
    - A **Shortcuts app** shortcut may be provided in future updates.
 
+### Usage on Windows:
+
+1. **Install FileDrop**:
+   - Open **Command Prompt** or **PowerShell**.
+   - Install **FileDrop** via pip:
+     ```bash
+     pip install filedrop
+     ```
+
+2. **Run the Server**:
+   - After installation, run the server with:
+     ```bash
+     python -m filedrop
+     ```
+3. **Access the Server**: Open your browser and go to `http://localhost:8000`.
+
 ### How it Works:
 - Once the server is running, you can access the web interface at `http://localhost:8000`.
 - You can upload files through the web interface.
@@ -74,12 +90,13 @@ We welcome contributions to improve this project! If you’d like to contribute,
 To contribute, please fork this repository, make your changes, and submit a pull request. We appreciate your contributions!
 
 ### TODO:
-- **Windows Support**: Currently, the server does not support Windows. Contributions to support Windows are welcome.
+- **Windows Support**: **FileDrop** now supports **Windows**. However, further improvements to Windows compatibility are welcome. Contributions to refine Windows support are highly encouraged.
 - **Automatic Shortcut**: A shortcut that automatically downloads the bundled server and opens it when the app is launched.
 - **Other Enhancements**: Feel free to propose new features or improvements.
 
 ### Troubleshooting:
 - Ensure that all devices are connected to the **same local network** for proper communication.
+- If you encounter any issues with the server not starting, ensure that your firewall is not blocking port `8000`.
 
 ### Future Updates:
 - Additional features and fixes may be added based on feedback and contributions from the community.

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='filedrop',  # Package name
-    version='1.0.6',  # Version of the package
+    version='1.0.7',  # Version of the package
     packages=find_packages(),  # This will include all Python files in the "filedrop" directory
     install_requires=[
         'qrcode',
