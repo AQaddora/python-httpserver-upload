@@ -3,6 +3,8 @@ from http.server import SimpleHTTPRequestHandler, HTTPServer
 import socket
 import json
 import qrcode
+from qrcode.image.pure import PyPNGImage
+
 
 # Directory where files will be uploaded
 UPLOAD_DIR = 'uploads'
@@ -67,13 +69,20 @@ class SimpleHTTPRequestHandlerWithUpload(SimpleHTTPRequestHandler):
             ip_address = get_local_ip()
             self.wfile.write(ip_address.encode())
         elif self.path == '/qr_code.png':
-            # Serve the generated QR code
-            self.send_response(200)
-            self.send_header('Content-type', 'image/png')
-            self.end_headers()
+            # Check if QR code was generated successfully
             qr_path = self.generate_qr_code()
-            with open(qr_path, 'rb') as f:
-                self.wfile.write(f.read())
+            if qr_path and os.path.exists(qr_path):
+                self.send_response(200)
+                self.send_header('Content-type', 'image/png')
+                self.end_headers()
+                with open(qr_path, 'rb') as f:
+                    self.wfile.write(f.read())
+            else:
+                # Handle error if QR code wasn't generated
+                self.send_response(500)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+                self.wfile.write(b"Error: Failed to generate QR code.")
         else:
             super().do_GET()
 
@@ -328,26 +337,23 @@ class SimpleHTTPRequestHandlerWithUpload(SimpleHTTPRequestHandler):
         '''
 
     def generate_qr_code(self):
-        """Generate a QR code for the server URL and save it to the root folder"""
+        """Generate a QR code for the server URL and save it to the root folder as SVG"""
         try:
             url = f"http://{get_local_ip()}:8000"
-            qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
-            qr.add_data(url)
-            qr.make(fit=True)
-
-            img = qr.make_image(fill='black', back_color='white')
+            img = qrcode.make(url, image_factory=PyPNGImage)
             qr_path = os.path.join(STATIC_DIR, 'qr_code.png')
             img.save(qr_path)
+            print(f"QR code generated and saved as SVG at {qr_path}")  # Debugging output
             return qr_path
+
         except Exception as e:
             print(f"Error generating QR code: {e}")
-            return None
-
-
+            return None    
 # Run the server
 def main():
     server_address = ('', 8000)
     httpd = HTTPServer(server_address, SimpleHTTPRequestHandlerWithUpload)
+    print("Welcome to FileDrop! (v1.0.6)")
     print("Server running on http://localhost:8000")
     httpd.serve_forever()
 
