@@ -1,49 +1,87 @@
-# Python http.server File Upload
+# FileDrop - Simple File Sharing Server
 
-This adds a simple file upload page that works with the Python standard library http.server module, using CGI. No modules or installations required.
+**FileDrop** is a simple server that allows users on the same local network to easily upload and download files through a web interface. It also generates a QR code for quick access to the server URL from any device on the same network.
 
-Just place the cgi-bin folder from this repo in a directory, then run the http.server command with the `--cgi` flag from that directory, and visit http://localhost:8000/cgi-bin/pyupload.cgi
+### Key Features:
+- **File Sharing**: Upload and download files through a simple web interface.
+- **QR Code Generation**: Dynamically generates a QR code for easy access to the server.
+- **Local Network Only**: Works across multiple devices connected to the same local network.
+- **Cross-Platform**: Use on **macOS**, **Linux**, and **iOS** via **A-Shell Mini** or **A-Shell**.
 
-`python3 -m http.server --cgi`
+### Requirements:
+- Python 3.x
+- **Install via pip**:
+   ```bash
+   pip install filedrop
+   ```
 
-If you have the `qrcode` Python library installed it will render a QR code using your machine's .local address to make it simpler to access from other devices.
+   This will install all required dependencies, including the **qrcode** library for QR code generation.
 
-![Screenshot](/screenshot.png?raw=true "Screenshot")
+### Usage on iOS (A-Shell Mini):
 
-### Why?!??
+1. **Install A-Shell Mini**: Install **A-Shell Mini** or **A-Shell** from the App Store.
+2. **Install the Python Package**:
+   - Open **A-Shell** or **A-Shell Mini**.
+   - Install **FileDrop** by running:
+     ```bash
+     pip install filedrop
+     ```
+3. **Run the Server**:
+   - After installation, run the server with:
+     ```bash
+     python3 -m filedrop
+     ```
+4. **Access the Server**: Open **Safari** on your iOS device and go to `http://localhost:8000`.
 
-Who doesn't want to write cgi scripts in 2023? Kids these days have no idea how the world used to work.
+### Usage on macOS/Linux:
 
-But actually–the http.server module is really handy and very widely available. Sometimes you just want to drop some files to another machine.
+1. **Install FileDrop**:
+   - Install **FileDrop** via pip:
+     ```bash
+     pip install filedrop
+     ```
 
-### It doesn't work
+2. **Run the Server**:
+   - After installation, run the server with:
+     ```bash
+     python3 -m filedrop
+     ```
+3. **Access the Server**: Open your browser and go to `http://localhost:8000`.
 
-Ensure your user has execute permissions on the cgi file.
+4. **Optional: Create a Shortcut (for macOS)**:
+   - You can create a shortcut to automatically run the server and open the browser.
+   - A **Shortcuts app** shortcut may be provided in future updates.
 
-Try: `chmod +x ./cgi-bin/pyupload.cgi`
+### How it Works:
+- Once the server is running, you can access the web interface at `http://localhost:8000`.
+- You can upload files through the web interface.
+- Files are stored in a shared directory, and anyone on the same local network can download them.
+- The server generates a QR code that you can scan to easily open the server's web interface on another device.
 
+### Important Notes:
+- **Local Network**: All devices must be connected to the same **local network**.
+- **Recommendation**: Use a **5G network** for faster file transfers between devices.
 
-License
----------------
+### Contribution:
 
-The MIT License (MIT)
+We welcome contributions to improve this project! If you’d like to contribute, you can help with:
 
-Copyright (c) 2023 Adrien Delessert
+- Improving the codebase.
+- Enhancing cross-platform support (especially Windows support).
+- Creating a shortcut for automatic setup and execution on iOS.
+- Adding features or improving documentation.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+To contribute, please fork this repository, make your changes, and submit a pull request. We appreciate your contributions!
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+### TODO:
+- **Windows Support**: Currently, the server does not support Windows. Contributions to support Windows are welcome.
+- **Automatic Shortcut**: A shortcut that automatically downloads the bundled server and opens it when the app is launched.
+- **Other Enhancements**: Feel free to propose new features or improvements.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+### Troubleshooting:
+- Ensure that all devices are connected to the **same local network** for proper communication.
+
+### Future Updates:
+- Additional features and fixes may be added based on feedback and contributions from the community.
+
+Feel free to use this simple file-sharing server as needed. Enjoy sharing files easily across your local network!
