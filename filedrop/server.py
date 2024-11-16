@@ -6,11 +6,16 @@ import qrcode
 
 # Directory where files will be uploaded
 UPLOAD_DIR = 'uploads'
+STATIC_DIR = 'static'
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the script
 
 # Ensure the uploads directory exists
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
+
+# Ensure the uploads directory exists
+if not os.path.exists(STATIC_DIR):
+    os.makedirs(STATIC_DIR)
 
 def get_local_ip():
     """Get the local IP address of the server."""
@@ -331,7 +336,7 @@ class SimpleHTTPRequestHandlerWithUpload(SimpleHTTPRequestHandler):
             qr.make(fit=True)
 
             img = qr.make_image(fill='black', back_color='white')
-            qr_path = os.path.join(BASE_DIR, 'qr_code.png')
+            qr_path = os.path.join(STATIC_DIR, 'qr_code.png')
             img.save(qr_path)
             return qr_path
         except Exception as e:
